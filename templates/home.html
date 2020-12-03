@@ -54,7 +54,7 @@
       <p>
         Please choose your desired units: <br>
         <label>
-          <input type="radio" name="units" value="metric">
+          <input type="radio" name="units" value="metric" checked>
           Celsius
         </label><br>
         <label>
@@ -71,7 +71,7 @@
         <label>
           Please choose the date you'd like info on: <br>
         
-          <input type="date" name="date" min="{{ min_date.strftime('%Y-%m-%d') }}" max="{{ max_date.strftime('%Y-%m-%d') }}">
+          <input type="date" name="date" min="{{ min_date.strftime('%Y-%m-%d') }}" max="{{ max_date.strftime('%Y-%m-%d') }}" value="{{ max_date.strftime('%Y-%m-%d') }}">
         </label>
       </p>
 

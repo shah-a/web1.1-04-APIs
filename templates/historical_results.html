@@ -2,22 +2,14 @@
 
 {% block content %}
 <section class="weather-form">
-  {# 
-    TODO: Replace the hard-coded city and date below with data from the 
-    server.
-  #}
-  <h2>Weather in San Francisco</h2>
-  <p>on Saturday, August 29, 2020</p>
+  <h2>Weather in {{ city }}</h2>
+  <p>on {{ date.strftime('%A, %B %d, %Y') }}:</p>
 
-  {#
-    TODO: Add the temperature, description, and min & max temperature below.
-    Replace 'F' with the appropriate units.
-  #}
   <ul>
-    <li>Description:</li>
-    <li>Temperature: °F</li>
-    <li>Min: °F</li>
-    <li>Max: °F</li>
+    <li>Description: {{ description }}</li>
+    <li>Temperature: {{ temp }} °{{ temp_units }}</li>
+    <li>High: {{ max_temp }} °{{ temp_units }}</li>
+    <li>Low: {{ min_temp }} °{{ temp_units }}</li>
   </ul>
 
   {#
