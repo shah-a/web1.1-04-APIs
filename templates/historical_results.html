@@ -3,19 +3,17 @@
 {% block content %}
 <section class="weather-form">
   <h2>Weather in {{ city }}</h2>
-  <p>on {{ date.strftime('%A, %B %d, %Y') }}:</p>
-
+  <p>on {{ date.strftime('%A, %B %d, %Y') }} at {{ date.strftime('%I:%M %p %Z') }}:</p>
   <ul>
     <li>Description: {{ description }}</li>
     <li>Temperature: {{ temp }} °{{ temp_units }}</li>
-    <li>High: {{ max_temp }} °{{ temp_units }}</li>
-    <li>Low: {{ min_temp }} °{{ temp_units }}</li>
   </ul>
 
-  {#
-    TODO: Uncomment the following image tag to display a graph of the 
-    temperature over time.
-  #}
-  {# <img src="/graph/{{ lat }}/{{ lon }}/{{ units }}/{{ date.strftime('%Y-%m-%d') }}"> #}
+  <h2>Hourly Temperatures</h2>
+  <ul id="hourly">
+    <li>Max: {{ max_temp }} °{{ temp_units }}</li>
+    <li>Min: {{ min_temp }} °{{ temp_units }}</li>
+  </ul>
+  <img src="/graph/{{ lat }}/{{ lon }}/{{ units }}/{{ date.strftime('%Y-%m-%d') }}">
 </section>
 {% endblock %}

@@ -3,7 +3,7 @@
 {% block content %}
 <section>
   <h2>Weather in {{ city }}</h2>
-  <p>on {{ date.strftime('%A, %B %d, %Y') }}:</p>
+  <p>on {{ date.strftime('%A, %B %d, %Y') }} at {{ date.strftime('%I:%M %p %Z') }}:</p>
 
   <ul>
     <li>Temperature: {{ temp }} °{{ temp_units }}</li>

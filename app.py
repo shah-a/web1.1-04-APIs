@@ -11,6 +11,9 @@ from dotenv import load_dotenv
 from geopy.geocoders import Nominatim
 from flask import Flask, render_template, request, send_file
 
+from io import BytesIO
+import matplotlib.pyplot as plot
+
 ################################################################################
 ## SETUP
 ################################################################################
@@ -42,7 +45,7 @@ def get_units_for_temp(units):
 
 def get_units_for_wind(units):
     """Returns appropriate units for wind speed."""
-    return 'm/s' if units == 'metric' or units == 'kelvin' else 'mph'
+    return 'm/s' if units in ('metric', 'kelvin') else 'mph'
 
 @app.route('/results')
 def results():
@@ -83,14 +86,14 @@ def results():
 
     return render_template('results.html', **context)
 
-def get_min_temp(results):
+def get_min_temp(hourly_results):
     """Returns the minimum temp for the given hourly weather objects."""
-    temps = [result['temp'] for result in results]
+    temps = [result['temp'] for result in hourly_results]
     return min(temps)
 
-def get_max_temp(results):
+def get_max_temp(hourly_results):
     """Returns the maximum temp for the given hourly weather objects."""
-    temps = [result['temp'] for result in results]
+    temps = [result['temp'] for result in hourly_results]
     return max(temps)
 
 def get_lat_lon(city_name):
@@ -107,9 +110,9 @@ def historical_results():
     """Displays historical weather forecast for a given day."""
 
     city = request.args.get('city')
-    date = request.args.get('date')
+    date = request.args.get('date') + " +0000"
     units = request.args.get('units')
-    date_obj = datetime.strptime(date, '%Y-%m-%d')
+    date_obj = datetime.strptime(date, '%Y-%m-%d %z')
     date_in_seconds = date_obj.timestamp()
     latitude, longitude = get_lat_lon(city)
 
@@ -148,6 +151,63 @@ def historical_results():
         return render_template('error.html', city=city)
 
     return render_template('historical_results.html', **context)
+
+################################################################################
+## GRAPH IMAGE
+################################################################################
+
+def make_graph_image(x_data, y_data, x_label, y_label):
+    """
+    Creates and returns a line graph with the given data.
+    Written with help from http://dataviztalk.blogspot.com/2016/01/serving-matplotlib-plot-that-follows.html
+    """
+    plot.switch_backend('Agg')  # Reference: https://github.com/matplotlib/matplotlib/issues/14304/#issuecomment-545717061
+    fig, _ = plot.subplots()
+    plot.plot(x_data, y_data)
+    plot.xlabel(x_label)
+    plot.ylabel(y_label)
+    img = BytesIO()
+    fig.savefig(img)
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+@app.route('/graph/<lat>/<lon>/<units>/<date>')
+def graph(lat, lon, units, date):
+    """
+    Returns a line graph with data for the given location & date.
+    @param lat The latitude.
+    @param lon The longitude.
+    @param units The units (imperial, metric, or kelvin)
+    @param date The date, in the format %Y-%m-%d.
+    """
+
+    date_obj = datetime.strptime(date, '%Y-%m-%d')
+    date_in_seconds = date_obj.timestamp()
+
+    # API docs: https://openweathermap.org/api/one-call-api
+    URL = 'http://api.openweathermap.org/data/2.5/onecall/timemachine'
+    params = {
+        'appid': API_KEY,
+        'lat': lat,
+        'lon': lon,
+        'units': units,
+        'dt': int(date_in_seconds)
+    }
+
+    result_json = requests.get(URL, params=params).json()
+
+    # Uncomment the line below to see the results of the API call!
+    # pp.pprint(result_json)
+
+    temps = [result['temp'] for result in result_json['hourly']]
+    hours = range(len(temps))
+    image = make_graph_image(
+        hours,
+        temps,
+        'Hour (UTC)',
+        f'Temperature ({get_units_for_temp(units)})'
+    )
+    return image
 
 if __name__ == '__main__':
     app.run(debug=True)
